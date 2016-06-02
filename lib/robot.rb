@@ -31,6 +31,7 @@ class Robot
     if can_carry?(item)
       @items << item
       self.equipped_weapon = item if item.is_a?(Weapon)
+      item.feed(self) if health <= 80
       true
     else
       false
@@ -73,9 +74,10 @@ class Robot
   end
 
   def attack(foe)
-    if equipped_weapon
+    if equipped_weapon && in_range?(foe, equipped_weapon)
       equipped_weapon.hit(foe)
-    else
+      self.equipped_weapon = nil
+    elsif is_close?(foe)
       foe.wound(5)
     end
   end
@@ -83,6 +85,14 @@ class Robot
   def attack!(foe)
     raise(Exceptions::UnattackableEnemy, "The enemy is not a robot") unless foe.is_a?(Robot)
     attack(foe)
+  end
+
+  def is_close?(other)
+    VectorAlgebra.norm(other.position) <= 1
+  end
+
+  def in_range?(other, item)
+    VectorAlgebra.norm(other.position) <= item.range
   end
 
 end
