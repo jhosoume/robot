@@ -1,8 +1,7 @@
 class Grenade < Weapon
 
   def initialize
-    super("Grenade", 40, 15)
-    @range = 2
+    super("Grenade", 40, 15, 2)
   end
 
 end

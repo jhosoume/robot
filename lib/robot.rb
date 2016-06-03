@@ -1,15 +1,21 @@
 class Robot
 
-  attr_accessor :equipped_weapon
-  attr_reader :position, :items, :health
+  @@robots = []
 
-  CAPACITY = 250 # Best implementation of capacity?
+  attr_accessor :equipped_weapon
+  attr_reader :position, :items, :health, :shield
+
+  CAPACITY = 250 # Best implementation of capacity? YES!
+  MAX_HEALTH = 100
+  MAX_SHIELDS = 50
 
   def initialize
     @position = [0, 0]
     @items = []
-    @health = 100
-  end
+    @health = MAX_HEALTH
+    @shield = MAX_SHIELDS
+    @@robots << self
+    end
 
   def move_left
     @position[0] -= 1
@@ -28,14 +34,12 @@ class Robot
   end
 
   def pick_up(item)
+    # Should the weapon goes in the itens? Or just equip and never see its weigth?
     if can_carry?(item)
-      @items << item
       self.equipped_weapon = item if item.is_a?(Weapon)
-      item.feed(self) if health <= 80
-      true
-    else
-      false
-    end
+      item.feed(self) if health <= 80 && item.is_a?(BoxOfBolts)
+      @items << item
+      end
   end
 
   def items_weight
@@ -49,19 +53,11 @@ class Robot
   end
 
   def wound(damage_value)
-    if @health - damage_value <= 0
-      @health = 0
-    else
-      @health -= damage_value
-    end
+    @health = [0, @health - damage_value].max
   end
 
   def heal(health_value)
-    if @health + health_value >= 100
-      @health = 100
-    else
-      @health += health_value
-    end
+    @health = [MAX_HEALTH, @health + health_value].min
   end
 
   def dead?
