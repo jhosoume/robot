@@ -53,7 +53,9 @@ class Robot
   end
 
   def wound(damage_value)
-    @health = [0, @health - damage_value].max
+    residual_value = [0, damage_value - @shield].max
+    @shield = [0, @shield - damage_value].max
+    @health = [0, @health - residual_value].max
   end
 
   def heal(health_value)
@@ -67,6 +69,10 @@ class Robot
   def heal!(health_value)
     raise(Exceptions::RobotAlreadyDeadError, "This robot is already dead!") if dead?
     heal(health_value)
+  end
+
+  def shield_up(shield_value)
+    @shield = [MAX_SHIELDS, @shield + shield_value].min
   end
 
   def attack(foe)
@@ -84,11 +90,26 @@ class Robot
   end
 
   def is_close?(other)
-    VectorAlgebra.norm(other.position) <= 1
+    VectorAlgebra.norm(other.position - position) <= 1
   end
 
   def in_range?(other, item)
-    VectorAlgebra.norm(other.position) <= item.range
+    VectorAlgebra.norm(other.position - position) <= item.range
   end
+
+  def scan(coordinate)
+    found = []
+    for axes_x in (coordinate[0] - 1)..(coordinate[0] + 1)
+      for axes_y in (coordinate[1] - 1)..(coordinate[1] + 1)
+        found << in_position[axes_x, axes_y]
+      end
+    end
+    found.flatten
+  end
+
+  class << self
+    def in_position(coordinates)
+    @@robots.select { |robot| robot.position == coordinates } 
+    end
 
 end
